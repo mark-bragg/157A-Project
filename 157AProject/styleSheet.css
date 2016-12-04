@@ -1,0 +1,12 @@
+table, th, td {
+    border: 1px solid black;
+}
+
+.centered {
+    display: inline-block;
+    text-align: center;
+}
+.queryForm {
+    display: inline-block;
+    text-align: center;
+}
