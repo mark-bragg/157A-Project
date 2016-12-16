@@ -1,8 +1,7 @@
 <?php
-	$db = mysqli_connect('localhost', 'root', '', '157A')
+	$db = mysqli_connect('p:localhost', 'root', '', 'college_degrees')
 	or die('Error connecting to MySQL server');
 ?>
-
 
 <!DOCTYPE html>
 	<head>
@@ -10,25 +9,24 @@
 		<title>Higher Education Degree Database</title>
                 <meta http-equiv="Content-Type" content="text/html 
                     charset=UTF-8" />
-                <meta name="Author" content="Charles Bocage" />
-                <meta name="description" content="This is a CS157A sample
-			page" />
+                <meta name="Author" content="Team Flash" />
+                <meta name="description" content="College Degrees Browser" />
 	</head>
 	<body>
 		<div class="centered">
 			<h1>Higher Education Degree Database</h1><br />
-			<B>Team Members:</B> Tim Bly, (insert your names) <br /><br />
+			<B>Team Members:</B> Tim Bly, David Burke, Mark Bragg, Bishal Wagle<br/>
 		</div>
 		<hr>
 		<B>Relations:</B>
 		<ol>
 			<li><a href="/157AProject/index.php?query=select * from colleges;" >Colleges</a></li>
-			<li><a href="/157AProject/index.php?query=select * from courseprereqs;" >Course Prerequisites</a></li>
+			<li><a href="/157AProject/index.php?query=select * from coursePrereqs;" >Course Prerequisites</a></li>
 			<li><a href="/157AProject/index.php?query=select * from courses;" >Courses</a></li>
-			<li><a href="/157AProject/index.php?query=select * from degreerequirescourse;" >Degree Requires Course</a></li>
+			<li><a href="/157AProject/index.php?query=select * from degreeRequiresCourse;" >Degree Requires Course</a></li>
 			<li><a href="/157AProject/index.php?query=select * from degrees;" >Degrees</a></li>
 			<li><a href="/157AProject/index.php?query=select * from departments;" >Departments</a></li>
-			<li><a href="/157AProject/index.php?query=select * from occupationrequiresdegree;" >Occupation Requires Degree</a></li>
+			<li><a href="/157AProject/index.php?query=select * from occupationRequiresDegree;" >Occupation Requires Degree</a></li>
 			<li><a href="/157AProject/index.php?query=select * from occupations;" >Occupations</a></li>
 			<li><a href="/157AProject/index.php?query=select * from universities;" >Universities</a></li>
 		</ol>
@@ -36,7 +34,7 @@
 		<B>Queries:</B>
 		<ol>
 			<li><a href="/157AProject/index.php?query=SELECT drc.courseName, drc.courseNum, c.description FROM 
-			`degreerequirescourse` AS drc INNER JOIN courses AS c ON c.number = drc.courseNum 
+			`degreeRequiresCourse` AS drc INNER JOIN courses AS c ON c.number = drc.courseNum 
 			WHERE drc.courseNum LIKE 'MATH%' AND drc.degreeName='BS in Computer Science' 
 			AND drc.uName='San Jose State University'" >Query 1</a>&nbsp;What are the course names, numbers and 
 			descriptions of all the math classes needed for a Bachelor’s degree in Computer Science at San Jose State?
@@ -48,7 +46,7 @@
 			average salary that do not require a college degree?
 			</li>
 			<li><a href="/157AProject/index.php?query=SELECT DISTINCT c.dName FROM courses AS c 
-			INNER JOIN degreerequirescourse AS drc ON c.number=drc.courseNum 
+			INNER JOIN degreeRequiresCourse AS drc ON c.number=drc.courseNum 
 			WHERE drc.degreeName='BS in Computer Engineering' AND drc.uName='San Jose State University'" >
 			Query 3</a>&nbsp;Which different departments do I need to take courses from in order to 
 			get a Bachelor’s degree in Computer Engineering at San Jose State?
@@ -66,7 +64,7 @@
 		<hr>
 		<B>Ad-hoc Query:</B>
 
-			<FORM class="queryForm" METHOD=GET ACTION="">
+			<FORM class="colored" class="queryForm" METHOD=GET ACTION="">
 				<table>
 					<tr>
 						<td align = left>
@@ -87,32 +85,80 @@
 				</table>
 			</FORM>
 
+                <hr>
+                <B>Additional Functionality:</b>
+                <h3>Explore Transactions</h3>
+                    <a href="index.php" target="_blank">Start Another Page</a>
+                        <table>
+                            <tr>
+                                <td align=center>
+                    			<p>Autocommit: </p><a href="/157AProject/index.php?func=autocommitOn"> On </a>  <a href="/157AProject/index.php?func=autocommitOff">&nbsp; Off </a>
+                                </td>
+                            </tr>
+                            <tr>
+                               <td align=center>
+                                       <a href="/157AProject/index.php?func=commit">Commit Your Work</a>
+                               </td>
+                            </tr>
+                            <tr>
+                               <td align=center>
+                                       <a href="/157AProject/index.php?func=rollback">Rollback Your Work</a>
+                               </td>
+                            </tr>
+                        </table>
 
-		<div id="results">
+                <hr>
+		<div id="results" class="fade">
 		<hr>
 			<?php
+				if (isset($_REQUEST['func']))
+				{
+					echo $_REQUEST['func'] . " performed";
+					$doFunc = $_REQUEST['func'];
+					switch ($doFunc) 
+					{
+						case "commit" :
+							mysqli_commit($db);
+							break;
+						case "rollback" :
+							echo 'rollback: ' . mysqli_rollback($db);
+							break;
+						case "autocommitOn" :
+							echo 'autocommit on: ' . mysqli_autocommit($db, TRUE);
+							break;
+						case "autocommitOff" :
+							echo 'autocommit off: ' . mysqli_autocommit($db, FALSE);
+							mysqli_begin_transaction($db);
+							break;
+					}
+				}
+				else
 				if (isset($_REQUEST['query']))
 				{
-					mysqli_query($db, $_REQUEST['query']) or die('Error querying database');
-					$result = mysqli_query($db, $_REQUEST['query']);
-					$qInfo = mysqli_fetch_fields( $result );
-					echo '<table style="width:100%" padding: 15px>' . '<tr>';
-					foreach($qInfo as $val){
-						echo '<th>' . $val->name . '</th>';
-					}
-					echo '</tr>';
-					
-					while($row = mysqli_fetch_array($result)){
-						echo '<tr>';
+					($result = mysqli_query($db, $_REQUEST['query'])) or die('Error querying database');
+                                        if ($result === TRUE) {
+                                            echo 'STATEMENT EXECUTED';
+                                        }
+                                        else {
+						$qInfo = mysqli_fetch_fields( $result );
+						echo '<table style="width:100%" padding: 15px>' . '<tr>';
 						foreach($qInfo as $val){
-							echo '<td>' . $row[$val->name] . '</td>';
+						echo '<th>' . $val->name . '</th>';
 						}
 						echo '</tr>';
+					
+						while($row = mysqli_fetch_array($result)){
+							echo '<tr>';
+							foreach($qInfo as $val){
+								echo '<td>' . $row[$val->name] . '</td>';
+							}
+							echo '</tr>';
+						}
 					}
 				}
 				else
 				{
-					print "We have no query";
+					print "No query provided";
 				}
 			?>
 		</div>
